@@ -238,3 +238,55 @@ LinkedHashMap按照插入顺序排序
 3. linkedList提供栈和队列的行为
 4. Set不接受重复元素，HashSet快速访问，Treeset保持排序，LinkedSet保持插入顺序
 5. 不应该使用过时的vector，hashtable和stack
+
+# 线程池
+
+## ExecuteService
+
+### newFixedThreadPool
+
+特性：
+
+1. 创建一个固定线程数的线程池, 新的task会放入一个无限大的linkedBlockingQueue。
+2. thread会一直存在，就算是任务完成了，thread也会存在, 必须显式的shutdown。
+
+优点：适合long run task，间隔时间run的task
+
+### newCachedThreadPool
+
+特性：
+
+1. 可以创建一个无限扩大的线程池, 新的task会导致一个新的线程，或者之前的线程被重新使用。
+2. 内部使用的是SynchronousQueue，只有在task被移除，新的task才能进入。
+3. thread会在完成task之后，一定时间内关闭thread并且移除出pool。
+
+优点：适合非常多short lived task （如果不是I/O bound, 可以考虑newWorkStealingPool）
+
+## ScheduledThreadPoolExecutor
+
+特性：
+
+1. 可以创建一个延迟执行的线程池。线程池内的初始线程会一直存在，但是会扩展到int.max大
+2. 内部使用delayedworkingqueue。delay最少的task能够被优先执行。
+
+## newWorkStealingPool
+
+特性：
+
+1. 默认创建core count个线程，每个线程都有自己的queue
+2. 优先从线程自己的queue中获取task，如果自己queue为空，才从别的queue “steal” task。
+3. 使用ForkJoinPool
+
+优点：性能好
+
+缺点：不适合I/O bound的操作，因为等很久的话，线程被阻塞，影响性能。
+
+## Folk/Join
+
+特性：
+
+1. 讲tasks划分为subtasks，然后对结果汇总
+2. 使用的是ForkJoinPool
+
+优点：对结果汇总更加容易。executors可不好做
+
